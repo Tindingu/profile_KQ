@@ -1,0 +1,177 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  ADMIN
+  EDITOR
+}
+
+enum Status {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum Kind {
+  POST
+  PROJECT
+  SERVICE
+  PARTNER
+  PRESS
+  TIMELINE
+  ALBUM
+  PROFILE
+  SETTINGS
+}
+
+enum ContactStatus {
+  NEW
+  PROCESSING
+  CONTACTED
+  COMPLETED
+}
+
+model User {
+  id           String     @id @default(cuid())
+  name         String
+  email        String     @unique
+  passwordHash String
+  role         Role       @default(EDITOR)
+  active       Boolean    @default(true)
+  contents     Content[]
+  auditLogs    AuditLog[]
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+}
+
+model Category {
+  id        String    @id @default(cuid())
+  kind      Kind
+  slug      String
+  nameVi    String
+  nameEn    String    @default("")
+  sortOrder Int       @default(0)
+  contents  Content[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@unique([kind, slug])
+}
+
+model Content {
+  id           String         @id @default(cuid())
+  kind         Kind
+  slug         String
+  status       Status         @default(DRAFT)
+  featured     Boolean        @default(false)
+  sortOrder    Int            @default(0)
+  publishedAt  DateTime?
+  categoryId   String?
+  category     Category?      @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  authorId     String
+  author       User           @relation(fields: [authorId], references: [id], onDelete: Restrict)
+  translations Translation[]
+  coverId      String?
+  cover        Media?         @relation("Cover", fields: [coverId], references: [id], onDelete: Restrict)
+  gallery      ContentMedia[]
+  tags         String[]       @default([])
+  client       String         @default("")
+  year         Int?
+  location     String         @default("")
+  externalUrl  String         @default("")
+  videoUrl     String         @default("")
+  audioUrl     String         @default("")
+  relatedIds   String[]       @default([])
+  data         Json           @default("{}")
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  @@unique([kind, slug])
+  @@index([kind, status, publishedAt])
+  @@index([categoryId])
+}
+
+model Translation {
+  id              String  @id @default(cuid())
+  contentId       String
+  content         Content @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  locale          String
+  title           String
+  excerpt         String  @default("")
+  body            String  @default("")
+  metaTitle       String  @default("")
+  metaDescription String  @default("")
+  ogImage         String  @default("")
+  canonical       String  @default("")
+
+  @@unique([contentId, locale])
+}
+
+model Media {
+  id        String         @id @default(cuid())
+  publicId  String         @unique
+  url       String         @unique
+  name      String
+  alt       String         @default("")
+  caption   String         @default("")
+  width     Int
+  height    Int
+  bytes     Int
+  mime      String
+  covers    Content[]      @relation("Cover")
+  usages    ContentMedia[]
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+}
+
+model ContentMedia {
+  contentId String
+  mediaId   String
+  content   Content @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  media     Media   @relation(fields: [mediaId], references: [id], onDelete: Restrict)
+  sortOrder Int     @default(0)
+
+  @@id([contentId, mediaId])
+}
+
+model ContactSubmission {
+  id                 String        @id @default(cuid())
+  name               String
+  email              String
+  phone              String
+  company            String        @default("")
+  service            String
+  eventDate          DateTime?
+  location           String        @default("")
+  message            String
+  status             ContactStatus @default(NEW)
+  notes              String        @default("")
+  notificationStatus String        @default("NOT_CONFIGURED")
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+
+  @@index([status, createdAt])
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Restrict)
+  action    String
+  entityId  String
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+}
+
+model RateLimit {
+  key       String   @id
+  count     Int      @default(1)
+  expiresAt DateTime
+}
