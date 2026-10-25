@@ -31,7 +31,7 @@ export default async function AdminLayout({
     <div className="admin-shell">
       <aside className="admin-sidebar">
         <Link href="/admin" className="admin-logo">
-          ma<span>CONTENT STUDIO</span>
+          kq<span>CONTENT STUDIO</span>
         </Link>
         <p className="sidebar-label">WORKSPACE</p>
         <nav>

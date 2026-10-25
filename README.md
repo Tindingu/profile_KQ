@@ -6,6 +6,8 @@
 
 ## Chạy local
 
+**Nếu `.env` đã dùng Neon:** chỉ cần `npm run dev -- --port 3001` để chạy website, không cần khởi động PostgreSQL local. Database Neon hiện đã được áp dụng migration và nhận bản sao dữ liệu local, bao gồm tài khoản và ảnh Hero đang dùng. Các bước bên dưới dành cho checkout mới hoặc khi muốn dùng PostgreSQL trên máy.
+
 Yêu cầu Node.js 22.12+ hoặc 24, npm và PostgreSQL. Workspace hiện đã có `.env` riêng được bỏ qua bởi Git và PostgreSQL local đã khởi tạo.
 
 ```powershell
@@ -25,7 +27,21 @@ Mở http://localhost:3001/vi và http://localhost:3001/admin. Trong checkout n�
 
 Tài khoản local: xem `ADMIN_EMAIL` và `ADMIN_PASSWORD` trong `.env` bằng trình soạn thảo. Mật khẩu được sinh ngẫu nhiên, không hardcode hoặc đưa vào README. Seed không thay mật khẩu/nội dung đã có; chỉ bổ sung các khóa cấu hình mới còn thiếu. Tạo admin production bằng environment của bạn rồi chạy seed một lần. Tài khoản có thể sửa role, password hoặc vô hiệu trong `/admin/users`; không thể vô hiệu admin cuối cùng.
 
-Helper PostgreSQL chỉ dùng cho development, không cần Docker hay cài service hệ thống. Chạy foreground trong terminal riêng, Ctrl+C dừng sạch; dữ liệu vẫn giữ lại. Production dùng PostgreSQL được quản lý hoặc PostgreSQL có backup, không dùng helper này.
+Helper PostgreSQL chỉ dùng cho development, không cần Docker hay cài service hệ thống. Helper ưu tiên `LOCAL_DATABASE_URL` nếu có, sau đó mới dùng `DATABASE_URL`. Khởi động helper không tự chuyển website từ Neon về local. Chạy foreground trong terminal riêng, Ctrl+C dừng sạch; dữ liệu vẫn giữ lại. Production dùng PostgreSQL được quản lý hoặc PostgreSQL có backup, không dùng helper này.
+
+## Cấu hình Neon
+
+- `DATABASE_URL`: URL pooled có `-pooler` trong hostname, dùng cho website và các truy vấn ứng dụng.
+- `DIRECT_URL`: URL direct cùng database, bỏ `-pooler` trong hostname, dùng cho Prisma migration. `prisma.config.ts` ưu tiên URL này và fallback về `DATABASE_URL` nếu để trống.
+- `LOCAL_DATABASE_URL`: kết nối local cũ được giữ trong `.env` để có thể quay lại database trên máy. Dữ liệu `.local/postgres` vẫn giữ nguyên.
+
+Các URL thật chỉ đặt trong `.env` hoặc secret manager, không đưa vào `.env.example` hay commit Git. Cấu hình hiện dùng `sslmode=verify-full` để xác minh chứng chỉ và hostname, giữ TLS và bật channel binding trên pg adapter. Không dùng `rejectUnauthorized: false`.
+
+Để quay lại bản local khi cần: đặt `DATABASE_URL` bằng giá trị `LOCAL_DATABASE_URL`, để trống `DIRECT_URL`, khởi động `npm run db:local` rồi khởi động lại website. Hai database là hai bản độc lập; thay đổi mới trên Neon không tự đồng bộ về bản local cũ.
+
+Sau khi sửa kết nối database, khởi động lại dev server nếu đang chạy. Prisma Client trong development cũng được thay mới khi URL database đổi. Không cần seed lại sau khi dữ liệu local đã được chuyển sang Neon; seed không phải là công cụ đồng bộ hai database.
+
+Với một database Neon mới khác: đặt hai URL, chạy `npm run db:generate`, `npm run db:migrate`, sau đó `npm run db:seed` nếu muốn tạo dữ liệu mẫu và Admin từ environment. Hướng dẫn về pooled/direct URL: [Neon — Prisma](https://neon.com/docs/guides/prisma).
 
 ## PostgreSQL riêng / production
 
@@ -47,7 +63,7 @@ Portfolio và dịch vụ dùng cùng trình biên tập, thêm client, year, lo
 
 ## Homepage, About và SEO
 
-Mở Trang chủ & Giới thiệu: title là tên thương hiệu, excerpt là slogan, body là phần giới thiệu ngắn, cover là hero portrait, gallery là ảnh trang About. Các trường cấu hình có nhãn và input cho VI/EN, câu chuyện đầy đủ, nghề nghiệp và liên kết PDF. Timeline có module riêng, hỗ trợ thứ tự và năm; có thể thêm các mốc giải thưởng bằng cùng module.
+Mở Trang chủ & Giới thiệu: title là tên thương hiệu, excerpt là slogan ngắn, body là phần giới thiệu hiển thị cạnh carousel Hero và trong phần About, cover là hero portrait, gallery là ảnh trang About. Các trường cấu hình có nhãn và input cho VI/EN, lời chào Hero, câu chuyện đầy đủ, nghề nghiệp và liên kết PDF. Carousel dùng cover cùng các ảnh đã chọn ở Slideshow Hero, có mũi tên, chấm chọn, vuốt, bàn phím, tự chạy và dừng/tiếp tục. Timeline có module riêng, hỗ trợ thứ tự và năm; có thể thêm các mốc giải thưởng bằng cùng module.
 
 Mở Cài đặt & SEO: email/phone, social links, nhãn navigation, tiêu đề section và CTA trong hai ngôn ngữ, footer, thông báo dữ liệu mẫu. Ảnh đại diện của Cài đặt là logo navigation, trường favicon nhận URL ảnh từ thư viện. Google Analytics được nạp khi Measurement ID hợp lệ dạng G-...; để trống để tắt. Hero hỗ trợ chọn thêm ảnh slideshow, có nút đổi ảnh và tôn trọng reduced motion. Mỗi bài và dự án có title/description/OG image/canonical riêng; để trống dùng title/excerpt/cover. Canonical mặc định lấy NEXT_PUBLIC_SITE_URL và locale. Sitemap chỉ chứa nội dung đã xuất bản đến hạn. Public dùng SSR để cập nhật tức thì; revalidation cũng xóa router cache khi nội dung đổi.
 

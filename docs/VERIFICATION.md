@@ -49,3 +49,9 @@ Caption Tiptap được lấy từ metadata lúc chèn ảnh; thay caption trong
 Chưa có version history, autosave, MFA, password reset qua email hoặc workflow phê duyệt nhiều cấp; những mục này không thuộc luồng CMS đã nghiệm thu. Password có thể đổi trong quản lý tài khoản. Public nhận nội dung được lưu khi trạng thái là PUBLISHED; muốn soạn riêng trước khi xuất bản lại thì chuyển bài về DRAFT. Bản dịch fallback VI khi EN chưa có title.
 
 Các font được self-host, có giấy phép SIL OFL trong `public/fonts`. Ảnh, nhân vật, dự án và thương hiệu seed đều là nội dung minh họa và được ghi rõ trên website. Trước khi công bố cần thay bằng thông tin có thật của chủ website.
+
+## Chuyển database sang Neon — 25/10/2026
+
+Đã kiểm tra database Neon mới trống, áp dụng migration khởi tạo rồi sao chép dữ liệu local trong một transaction, giữ ID và các quan hệ. Dữ liệu sau khi chuyển và đối chiếu: 1 user, 8 media, 10 category, 22 content, 44 translation, 20 liên kết gallery, 0 booking và 135 audit log. Counter rate limit tạm thời không được chuyển. Không chạy seed đè lên nội dung đã chỉnh và không xóa dữ liệu nguồn.
+
+Runtime dùng URL pooled; Prisma CLI dùng DIRECT_URL đã kiểm tra kết nối. TLS được xác minh chứng chỉ/hostname. Đã đăng nhập Admin qua ứng dụng và xác nhận request tạo counter đăng nhập trên Neon, chứng minh dev server đã nhận database mới. Homepage trả 200 và giữ tên hồ sơ đang dùng. Bộ E2E đầy đủ ở các mục trên được chạy trên database local trước đó, không chạy lại bộ test tạo/xóa dữ liệu trên database Neon đang sử dụng.

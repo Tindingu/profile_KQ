@@ -60,9 +60,20 @@ export default async function Home({
         where: { id: { in: profileData.heroImageIds as string[] } },
       })
     : [];
+  const slideIds = Array.isArray(profileData.heroImageIds)
+    ? (profileData.heroImageIds as string[])
+    : [];
+  const orderedSlides = slideIds.flatMap((id) => {
+    const photo = slides.find((photo) => photo.id === id);
+    return photo ? [photo] : [];
+  });
   const heroPhotos = [
     ...(profile.cover ? [profile.cover] : []),
-    ...slides.filter((m) => m.id !== profile.coverId),
+    ...orderedSlides.filter(
+      (photo, index) =>
+        photo.id !== profile.coverId &&
+        orderedSlides.findIndex((item) => item.id === photo.id) === index,
+    ),
   ];
   const featuredProjects = projects.filter((p) => p.featured).slice(0, 4);
   const featuredPosts = (
@@ -87,16 +98,24 @@ export default async function Home({
         }}
       />
       <section className="hero">
+        <HeroImages photos={heroPhotos} locale={locale} />
         <div className="hero-copy">
           <Reveal>
-            <p className="eyebrow">
-              <span className="tiny-star">✳</span> {labels.heroEyebrow}
-            </p>
+            <p className="eyebrow">{heroSubtitle || labels.heroEyebrow}</p>
             <h1>
-              {p.title}
-              <span className="hero-script">{p.excerpt}</span>
+              {String(
+                (
+                  profileData.heroGreeting as Record<string, string> | undefined
+                )?.[locale] ||
+                  (locale === "en" ? "Hello, I’m" : "Xin chào, tôi là"),
+              )}
+              <span className="hero-name">{p.title}.</span>
             </h1>
-            <p className="hero-role">{heroSubtitle}</p>
+            <div
+              className="hero-intro prose"
+              dangerouslySetInnerHTML={{ __html: cleanHtml(p.body) }}
+            />
+            <p className="hero-script">{p.excerpt}</p>
             <div className="hero-actions">
               <Link href={`/${locale}/kinh-nghiem`} className="primary-link">
                 {labels.work} <span>↗</span>
@@ -106,21 +125,6 @@ export default async function Home({
               </Link>
             </div>
           </Reveal>
-          <div className="hero-bottom">
-            <span>{labels.heroLocation}</span>
-            <span>SCROLL TO EXPLORE ↓</span>
-          </div>
-        </div>
-        <div className="hero-visual">
-          <HeroImages photos={heroPhotos} />
-          <div className="photo-label">
-            <span>{labels.heroPhotoLabel}</span>
-            <span>{labels.heroPhotoNote}</span>
-          </div>
-          <span className="hero-seal">
-            {labels.heroSeal}
-            <small>{labels.heroSealNote}</small>
-          </span>
         </div>
       </section>
       <div className="role-strip">

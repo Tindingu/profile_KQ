@@ -3,8 +3,11 @@ import EmbeddedPostgres from "embedded-postgres";
 import { existsSync, mkdirSync } from "node:fs";
 import { resolve } from "node:path";
 async function main() {
-  if (!process.env.DATABASE_URL) throw new Error("Set DATABASE_URL first.");
-  const url = new URL(process.env.DATABASE_URL);
+  const connectionString =
+    process.env.LOCAL_DATABASE_URL || process.env.DATABASE_URL;
+  if (!connectionString)
+    throw new Error("Set LOCAL_DATABASE_URL or DATABASE_URL first.");
+  const url = new URL(connectionString);
   if (!["localhost", "127.0.0.1"].includes(url.hostname))
     throw new Error("Local helper only accepts localhost.");
   const directory = resolve(".local/postgres");

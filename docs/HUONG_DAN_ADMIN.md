@@ -282,8 +282,8 @@ Mở **Trang chủ & Giới thiệu**. Đây là bản cấu hình dùng chung c
 | Trường trong biểu mẫu | Nội dung được thay đổi |
 | --- | --- |
 | Tiêu đề VI / EN | Tên thương hiệu cá nhân được hiển thị trên website |
-| Mô tả ngắn VI / EN | Slogan lớn trong Hero |
-| Nội dung VI / EN | Phần giới thiệu ngắn trên trang chủ và trang About |
+| Mô tả ngắn VI / EN | Slogan ngắn bên dưới đoạn giới thiệu trong Hero |
+| Nội dung VI / EN | Đoạn giới thiệu bên phải ảnh Hero, phần giới thiệu ngắn trên trang chủ và trang About |
 | Ảnh đại diện | Ảnh Hero và ảnh chính của trang giới thiệu |
 | Gallery | Các ảnh bổ sung ở trang giới thiệu |
 
@@ -293,7 +293,8 @@ Mở **Trang chủ & Giới thiệu**. Đây là bản cấu hình dùng chung c
 
 Mở khối **Cấu hình website**, chỉnh các trường tương ứng ở **Tiếng Việt / English**:
 
-- **Nghề nghiệp:** dòng giới thiệu nghề dưới slogan.
+- **Nghề nghiệp:** dòng giới thiệu nghề phía trên lời chào Hero.
+- **Lời chào Hero:** câu mở đầu phía trên tên, ví dụ “Xin chào, tôi là”; có thể sửa riêng VI/EN.
 - **Tiêu đề giới thiệu:** heading của phần giới thiệu ngắn trên homepage.
 - **Câu chuyện đầy đủ (HTML):** phần giới thiệu mở rộng khi khách bấm đọc thêm trên trang About.
 - **Lời dẫn dịch vụ / Lời dẫn liên hệ:** đoạn mở đầu của các khu vực tương ứng.
@@ -312,6 +313,10 @@ Mở khối **Cấu hình website**, chỉnh các trường tương ứng ở **
 1. Tại **Slideshow Hero (ngoài ảnh đại diện)**, bấm **Chọn từ thư viện**.
 2. Chọn các ảnh bổ sung rồi xác nhận.
 3. Bấm **Lưu nội dung** và mở trang chủ.
+
+Khi có ít nhất hai ảnh, carousel tự chuyển sau khoảng 6,5 giây. Bạn có thể bấm mũi tên, chọn chấm bên dưới, dùng phím trái/phải khi khối ảnh đang được chọn hoặc vuốt trên điện thoại. Nút dừng/tiếp tục nằm bên dưới ảnh; tự chạy cũng tạm dừng khi rê chuột hoặc thao tác bàn phím trong carousel. Nếu thiết bị bật giảm chuyển động, ảnh không tự chạy.
+
+Nếu chỉ có một ảnh, bộ đếm hiển thị `01 / 01`; hệ thống không tạo thêm ảnh giả. Các ảnh bổ sung lấy đúng từ mục Slideshow Hero, không tự lấy ảnh album hoặc dự án khác.
 
 Ảnh đại diện là ảnh chính; ảnh chọn thêm được dùng cho slideshow. Muốn tắt slideshow, mở lại bộ chọn, bỏ chọn các ảnh bổ sung, bấm **Chọn 0 ảnh** rồi lưu; ảnh đại diện vẫn giữ nguyên.
 

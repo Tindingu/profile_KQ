@@ -2,7 +2,10 @@ import "dotenv/config";
 import { PrismaClient, Prisma } from "../src/generated/prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 const db = new PrismaClient({
-  adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL }),
+  adapter: new PrismaPg({
+    connectionString: process.env.DATABASE_URL,
+    enableChannelBinding: true,
+  }),
 });
 export const labelDefaults = {
   vi: {
@@ -11,7 +14,7 @@ export const labelDefaults = {
     heroLocation: "HO CHI MINH CITY, VIETNAM",
     heroPhotoLabel: "THE ART OF CONNECTION",
     heroPhotoNote: "01 — PERSONAL JOURNAL",
-    heroSeal: "MA.",
+    heroSeal: "KQ.",
     heroSealNote: "WITH PURPOSE",
     storyHeading: "Mỗi bước đi, một câu chuyện.",
     detailCta: "Cùng tạo nên một khoảnh khắc đáng nhớ.",
@@ -24,7 +27,7 @@ export const labelDefaults = {
     heroLocation: "HO CHI MINH CITY, VIETNAM",
     heroPhotoLabel: "THE ART OF CONNECTION",
     heroPhotoNote: "01 — PERSONAL JOURNAL",
-    heroSeal: "MA.",
+    heroSeal: "KQ.",
     heroSealNote: "WITH PURPOSE",
     storyHeading: "Every step has a story.",
     detailCta: "Let’s create a memorable moment.",
@@ -74,6 +77,7 @@ export async function upgradeDefaults() {
       data: {
         data: {
           heroImageIds: [],
+          heroGreeting: { vi: "Xin chào, tôi là", en: "Hello, I’m" },
           ...(profile.data as Record<string, unknown>),
         } as Prisma.InputJsonValue,
       },

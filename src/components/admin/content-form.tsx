@@ -45,7 +45,12 @@ export function ContentForm({
   const router = useRouter();
   const [available, setAvailable] = useState(media);
   const [extra, setExtra] = useState<Record<string, unknown>>(
-    initial?.data || {},
+    kind === "PROFILE"
+      ? {
+          heroGreeting: { vi: "Xin chào, tôi là", en: "Hello, I’m" },
+          ...(initial?.data || {}),
+        }
+      : initial?.data || {},
   );
   const {
     register,

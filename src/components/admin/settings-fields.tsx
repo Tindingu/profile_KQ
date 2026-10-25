@@ -2,6 +2,7 @@
 type Node = Record<string, unknown>;
 const names: Record<string, string> = {
   roles: "Nghề nghiệp",
+  heroGreeting: "Lời chào Hero",
   aboutHeading: "Tiêu đề giới thiệu",
   aboutBody: "Câu chuyện đầy đủ (HTML)",
   servicesIntro: "Lời dẫn dịch vụ",
