@@ -23,6 +23,7 @@ export default async function Manage({
     page?: string;
     sort?: string;
     kind?: string;
+    parent?: string;
   }>;
 }) {
   const { section, path = [] } = await params;
@@ -129,6 +130,10 @@ export default async function Manage({
   }
   if (!isSection(section)) notFound();
   const config = sections[section];
+  const serviceArticles = section === "service-articles";
+  const serviceFilter = config.kind === "SERVICE"
+    ? { parentId: serviceArticles ? { not: null } : null }
+    : {};
   await requireKind(config.kind);
   if (path[0] === "new" || (path.length === 2 && path[1] === "edit")) {
     const row =
@@ -139,6 +144,12 @@ export default async function Manage({
             include: contentInclude,
           });
     if (path[0] !== "new" && (!row || row.kind !== config.kind)) notFound();
+    if (row && config.kind === "SERVICE" && Boolean(row.parentId) !== serviceArticles) notFound();
+    const topics = serviceArticles ? await db.content.findMany({
+      where: { kind: "SERVICE", parentId: null },
+      include: { translations: true },
+      orderBy: { sortOrder: "asc" },
+    }) : [];
     const [categories, media, related] = await Promise.all([
       db.category.findMany({
         where: { kind: config.kind },
@@ -156,6 +167,8 @@ export default async function Manage({
         key={row?.id || "new"}
         kind={config.kind}
         section={section}
+        topics={topics.map((topic) => ({ id: topic.id, title: topic.translations.find((t) => t.locale === "vi")?.title || topic.slug }))}
+        defaultParentId={sp.parent}
         categories={categories}
         media={media}
         related={related.map((r) => ({
@@ -173,6 +186,7 @@ export default async function Manage({
                 sortOrder: row.sortOrder,
                 publishedAt: publicationInput(row.publishedAt),
                 categoryId: row.categoryId || "",
+                parentId: row.parentId || "",
                 coverId: row.coverId || "",
                 galleryIds: row.gallery.map((g) => g.mediaId),
                 tags: row.tags,
@@ -211,6 +225,7 @@ export default async function Manage({
   const page = Math.max(1, Number(sp.page) || 1);
   const where: Prisma.ContentWhereInput = {
     kind: config.kind,
+    ...serviceFilter,
     ...(sp.q
       ? {
           translations: {
@@ -242,7 +257,7 @@ export default async function Manage({
           <h1>
             {config.label} <small>({count})</small>
           </h1>
-          <p className="muted">Tạo, biên tập và chia sẻ câu chuyện của bạn.</p>
+          <p className="muted">{config.kind === "SERVICE" ? serviceArticles ? "Mỗi bài viết thuộc một chủ đề dịch vụ. Chọn chủ đề trong phần Xuất bản." : "Mỗi chủ đề mở ra danh sách bài viết riêng. Thêm bài tại Bài viết dịch vụ." : "Tạo, biên tập và chia sẻ câu chuyện của bạn."}</p>
         </div>
         <Button asChild>
           <Link href={`/admin/${section}/new`}>+ Tạo mới</Link>
@@ -308,7 +323,7 @@ export default async function Manage({
                   </small>
                 </td>
                 <td>
-                  {r.category?.nameVi || "—"}
+                  {r.parent?.translations.find((t) => t.locale === "vi")?.title || r.category?.nameVi || "—"}
                   <small>{r.author.name}</small>
                 </td>
                 <td>
@@ -322,6 +337,7 @@ export default async function Manage({
                 </td>
                 <td>
                   <div className="flex gap-2 mb-2">
+                    {config.kind === "SERVICE" && !serviceArticles && <Link href={`/admin/service-articles/new?parent=${r.id}`}>+ Thêm bài</Link>}
                     <Link href={`/admin/${section}/${r.id}/edit`}>Sửa</Link>
                     <Link href={`/admin/preview/${r.id}`} target="_blank">
                       Preview ↗

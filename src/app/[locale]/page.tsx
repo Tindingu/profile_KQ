@@ -1,13 +1,15 @@
 import { HeroImages } from "@/components/public/hero-images";
 import Image from "next/image";
 import { db } from "@/lib/db";
-import Link from "next/link";
+import { TransitionLink as Link } from "@/components/public/page-transition";
 import { listContent, translated } from "@/lib/content";
 import { siteData, siteUrl } from "@/lib/site";
 import { safeUrl, cleanHtml } from "@/lib/security";
 import { Reveal } from "@/components/public/interactions";
 import { ContentCard } from "@/components/public/content-card";
+import { ServiceShowcase } from "@/components/public/service-showcase";
 import type { Metadata } from "next";
+import { Mic2, AudioLines } from "lucide-react";
 export async function generateMetadata({
   params,
 }: {
@@ -133,7 +135,30 @@ export default async function Home({
         ))}
       </div>
       <section className="section about-preview">
-        <Reveal>
+        <Reveal className="story-portrait-composition">
+          <div className="story-orbit" aria-hidden="true" />
+          <span className="story-side-note" aria-hidden="true">THE VOICE BEHIND THE STORY</span>
+          <div className="story-portrait-frame">
+            {profile.cover ? (
+              <Image
+                src={profile.cover.url}
+                alt={profile.cover.alt || p.title}
+                width={680}
+                height={840}
+                sizes="(max-width: 540px) 76vw, (max-width: 800px) 320px, 360px"
+              />
+            ) : <Mic2 className="story-portrait-placeholder" aria-hidden="true" />}
+          </div>
+          <div className="story-mic-seal" aria-hidden="true">
+            <Mic2 size={30} strokeWidth={1.2} />
+            <span>MC &amp;<br />STORYTELLER</span>
+          </div>
+          <div className="story-portrait-caption">
+            <AudioLines size={26} strokeWidth={1} aria-hidden="true" />
+            <span>{p.excerpt}</span>
+          </div>
+        </Reveal>
+        <Reveal className="story-preview-copy">
           <p className="eyebrow">01 / {labels.about}</p>
           <h2>
             {String(
@@ -142,8 +167,6 @@ export default async function Home({
               )?.[locale] || labels.about,
             )}
           </h2>
-        </Reveal>
-        <Reveal>
           <div
             className="prose"
             dangerouslySetInnerHTML={{ __html: cleanHtml(p.body) }}
@@ -185,21 +208,7 @@ export default async function Home({
             )}
           </p>
         </div>
-        {services.map((s, i) => {
-          const t = translated(s, locale);
-          return (
-            <Link
-              key={s.id}
-              href={`/${locale}/dich-vu/${s.slug}`}
-              className="service-row"
-            >
-              <span className="service-number">0{i + 1}</span>
-              <h3>{t?.title}</h3>
-              <p>{t?.excerpt}</p>
-              <span className="service-arrow">↗</span>
-            </Link>
-          );
-        })}
+        <ServiceShowcase services={services} locale={locale} portrait={profile.cover} />
       </section>
       {partners.length > 0 && (
         <section className="section partner-section">

@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import Link from "next/link";
+import { TransitionLink as Link } from "@/components/public/page-transition";
 import Image from "next/image";
 import type { Metadata } from "next";
 import type { Kind, Prisma } from "@/generated/prisma/client";
@@ -16,6 +16,7 @@ import { ContentCard } from "@/components/public/content-card";
 import { ContentDetail } from "@/components/public/detail";
 import { Gallery } from "@/components/public/interactions";
 import { ContactForm } from "@/components/public/contact-form";
+import { ServiceListing } from "@/components/public/service-listing";
 type Params = { locale: string; section: string; slug?: string[] };
 const kindMap: Record<string, Kind> = {
   blog: "POST",
@@ -43,9 +44,11 @@ export async function generateMetadata({
   let description: string | undefined;
   let image: string | undefined;
   let canonical: string | undefined;
-  if (slug?.length === 1 && kindMap[section]) {
+  if (slug?.length && kindMap[section] && (slug.length === 1 || section === "dich-vu" && slug.length === 2)) {
     const row = await db.content.findFirst({
-      where: { kind: kindMap[section], slug: slug[0], ...publicWhere() },
+      where: { kind: kindMap[section], slug: slug.at(-1), ...publicWhere(),
+        ...(section === "dich-vu" ? slug.length === 1 ? { parentId: null } : { parent: { kind: "SERVICE", parentId: null, slug: slug[0], ...publicWhere() } } : {}),
+      },
       include: contentInclude,
     });
     if (row) {
@@ -100,16 +103,22 @@ export default async function PublicPage({
   const en = locale === "en";
   const { profile, p, labels, profileData, data, socials } =
     await siteData(locale);
+  if (section === "dich-vu" && slug.length <= 1) {
+    return <ServiceListing locale={locale} slug={slug[0]} title={labels.serviceHeading} search={sp} />;
+  }
   if (slug.length) {
-    if (slug.length !== 1 || !kindMap[section]) notFound();
+    if ((section === "dich-vu" ? slug.length !== 2 : slug.length !== 1) || !kindMap[section]) notFound();
     const row = await db.content.findFirst({
-      where: { kind: kindMap[section], slug: slug[0], ...publicWhere() },
+      where: { kind: kindMap[section], slug: slug.at(-1), ...publicWhere(),
+        ...(section === "dich-vu" ? { parent: { kind: "SERVICE", parentId: null, slug: slug[0], ...publicWhere() } } : {}),
+      },
       include: contentInclude,
     });
     if (!row) notFound();
     const related = await db.content.findMany({
       where: {
         ...publicWhere(),
+        ...(row.kind === "SERVICE" ? { kind: "SERVICE", parentId: row.parentId } : { OR: [{ parentId: null }, { parent: publicWhere() }] }),
         id: { not: row.id },
         ...(row.relatedIds.length
           ? { AND: { id: { in: row.relatedIds } } }
@@ -122,7 +131,7 @@ export default async function PublicPage({
       take: 3,
     });
     const t = translated(row, locale);
-    const path = `/${locale}/${section}/${row.slug}`;
+    const path = `/${locale}/${section}/${row.parent ? row.parent.slug + "/" : ""}${row.slug}`;
     return (
       <>
         <script
@@ -159,9 +168,20 @@ export default async function PublicPage({
                   {
                     "@type": "ListItem",
                     position: 3,
+                    ...(row.parent ? {
+                      name: row.parent.translations.find((t) => t.locale === locale && t.title)?.title || row.parent.translations.find((t) => t.locale === "vi")?.title,
+                      item: siteUrl() + `/${locale}/${section}/${row.parent.slug}`,
+                    } : {
+                      name: t?.title,
+                      item: siteUrl() + path,
+                    }),
+                  },
+                  ...(row.parent ? [{
+                    "@type": "ListItem",
+                    position: 4,
                     name: t?.title,
                     item: siteUrl() + path,
-                  },
+                  }] : []),
                 ],
               },
             ]).replace(/</g, "\u003c"),
@@ -184,24 +204,29 @@ export default async function PublicPage({
       p?.body ||
       "";
     return (
-      <main>
+      <main className="about-view">
         <section className="section about-page">
-          <p className="eyebrow">THE PERSON BEHIND THE MICROPHONE</p>
-          <h1>
-            {labels.about}
-            <span className="serif-italic">{p?.title}</span>
-          </h1>
-          <div className="about-split">
+          <div className={`about-split${profile?.cover ? "" : " about-without-portrait"}`}>
             {profile?.cover && (
-              <Image
-                src={profile.cover.url}
-                alt={profile.cover.alt}
-                width={900}
-                height={1100}
-                priority
-              />
+              <figure className="about-portrait">
+                <Image
+                  src={profile.cover.url}
+                  alt={profile.cover.alt || p?.title || ""}
+                  width={760}
+                  height={960}
+                  priority
+                  sizes="(max-width: 380px) 82vw, (max-width: 800px) 320px, 380px"
+                />
+              </figure>
             )}
-            <div>
+            <header className="about-heading">
+              <p className="eyebrow">{en ? "THE PERSON BEHIND THE MICROPHONE" : "CÂU CHUYỆN PHÍA SAU ÁNH ĐÈN"}</p>
+              <h1>
+                {labels.about}
+                <span className="serif-italic">{p?.title}</span>
+              </h1>
+            </header>
+            <div className="about-story">
               <p className="large-quote">{p?.excerpt}</p>
               <div
                 className="prose"
@@ -307,37 +332,45 @@ export default async function PublicPage({
     );
   }
   if (section === "hinh-anh") {
-    const albums = await listContent("ALBUM");
-    const photos = albums
+    const [albums, categories] = await Promise.all([
+      listContent("ALBUM"),
+      db.category.findMany({ where: { kind: "ALBUM" }, orderBy: [{ sortOrder: "asc" }, { nameVi: "asc" }] }),
+    ]);
+    const selectedCategory = categories.find((category) => category.slug === sp.category || category.id === sp.category);
+    const categoryAlbums = albums.filter((album) => !sp.category || album.categoryId === selectedCategory?.id);
+    const selectedPhotos = categoryAlbums
       .filter((a) => !sp.album || a.id === sp.album)
       .flatMap((a) => a.gallery.map((g) => ({ ...g.media })));
+    const photos = [...new Map(selectedPhotos.map((photo) => [photo.id, photo])).values()];
     return (
       <main className="section">
         <header className="listing-header">
           <p className="eyebrow">A VISUAL JOURNAL</p>
           <h1>{labels.gallery}</h1>
         </header>
-        <nav className="category-tabs">
+        <nav className="category-tabs" aria-label={en ? "Photo categories" : "Danh mục hình ảnh"}>
           <Link
-            className={!sp.album ? "active" : ""}
+            className={!sp.category && !sp.album ? "active" : ""}
+            aria-current={!sp.category && !sp.album ? "page" : undefined}
             href={`/${locale}/hinh-anh`}
           >
             {labels.all}
           </Link>
-          {albums.map((a) => (
+          {categories.map((category) => (
             <Link
-              key={a.id}
-              className={sp.album === a.id ? "active" : ""}
-              href={`?album=${a.id}`}
+              key={category.id}
+              className={selectedCategory?.id === category.id ? "active" : ""}
+              aria-current={selectedCategory?.id === category.id ? "page" : undefined}
+              href={`/${locale}/hinh-anh?category=${encodeURIComponent(category.slug)}`}
             >
-              {translated(a, locale)?.title}
+              {en ? category.nameEn || category.nameVi : category.nameVi}
             </Link>
           ))}
         </nav>
-        <Gallery photos={photos} moreLabel={en ? "Load more" : "Xem thêm"} />
+        <Gallery key={`${sp.category || "all"}:${sp.album || "all"}`} photos={photos} moreLabel={en ? "Load more" : "Xem thêm"} />
         {!photos.length && (
           <p className="empty-state">
-            {en ? "This album is empty." : "Album chưa có hình ảnh."}
+            {en ? "No photos in this category yet." : "Danh mục này chưa có hình ảnh. Bộ ảnh sẽ được cập nhật sớm."}
           </p>
         )}
       </main>

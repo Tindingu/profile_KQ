@@ -3,6 +3,7 @@ import type { Prisma, Kind } from "@/generated/prisma/client";
 export const contentInclude = {
   translations: true,
   category: true,
+  parent: { select: { slug: true, translations: true } },
   author: { select: { name: true } },
   cover: true,
   gallery: { include: { media: true }, orderBy: { sortOrder: "asc" as const } },
@@ -27,7 +28,7 @@ export const publicWhere = () => ({
 });
 export async function listContent(kind: Kind, take = 100) {
   return db.content.findMany({
-    where: { kind, ...publicWhere() },
+    where: { kind, ...(kind === "SERVICE" ? { parentId: null } : {}), ...publicWhere() },
     include: contentInclude,
     orderBy: [{ sortOrder: "asc" }, { publishedAt: "desc" }],
     take,
@@ -36,7 +37,8 @@ export async function listContent(kind: Kind, take = 100) {
 export const sections = {
   posts: { kind: "POST", label: "Bài viết", path: "blog" },
   portfolio: { kind: "PROJECT", label: "Portfolio", path: "kinh-nghiem" },
-  services: { kind: "SERVICE", label: "Dịch vụ", path: "dich-vu" },
+  services: { kind: "SERVICE", label: "Chủ đề dịch vụ", path: "dich-vu" },
+  "service-articles": { kind: "SERVICE", label: "Bài viết dịch vụ", path: "dich-vu" },
   partners: { kind: "PARTNER", label: "Đối tác", path: "" },
   press: { kind: "PRESS", label: "Báo chí", path: "bao-chi" },
   timeline: {

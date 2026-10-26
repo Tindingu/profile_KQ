@@ -55,3 +55,23 @@ Các font được self-host, có giấy phép SIL OFL trong `public/fonts`. Ả
 Đã kiểm tra database Neon mới trống, áp dụng migration khởi tạo rồi sao chép dữ liệu local trong một transaction, giữ ID và các quan hệ. Dữ liệu sau khi chuyển và đối chiếu: 1 user, 8 media, 10 category, 22 content, 44 translation, 20 liên kết gallery, 0 booking và 135 audit log. Counter rate limit tạm thời không được chuyển. Không chạy seed đè lên nội dung đã chỉnh và không xóa dữ liệu nguồn.
 
 Runtime dùng URL pooled; Prisma CLI dùng DIRECT_URL đã kiểm tra kết nối. TLS được xác minh chứng chỉ/hostname. Đã đăng nhập Admin qua ứng dụng và xác nhận request tạo counter đăng nhập trên Neon, chứng minh dev server đã nhận database mới. Homepage trả 200 và giữ tên hồ sơ đang dùng. Bộ E2E đầy đủ ở các mục trên được chạy trên database local trước đó, không chạy lại bộ test tạo/xóa dữ liệu trên database Neon đang sử dụng.
+
+## Chủ đề và bài viết dịch vụ — 26/10/2026
+
+Đã áp dụng migration bổ sung quan hệ cha/con cho Content trên Neon. Các dịch vụ cũ giữ nguyên ID, tên, ảnh và nội dung, trở thành chủ đề; không tạo bài viết minh họa công khai.
+
+Đã kiểm tra bằng Playwright: trang Dịch vụ liệt kê chủ đề; ba trang chủ đề mở danh sách bài riêng; Admin tạo bài nháp với chủ đề được chọn trước qua nút Thêm bài, lưu và chuyển bài sang chủ đề khác; URL công khai không lộ bài nháp. Bản ghi nháp kiểm thử và audit tương ứng đã được xóa bằng ID chính xác. Kiểm tra truy vấn bài đã xuất bản đúng chủ đề trong transaction rồi rollback, không xuất bản bài thử ra website. Kiểm tra giao diện VI/EN tại chiều rộng 1440 và 390 px không tràn ngang và không phát sinh lỗi JavaScript trên các luồng đã chạy.
+
+Typecheck, ESLint, production build và 6 bài kiểm thử logic đều đạt trong đợt thay đổi. Không chạy lại toàn bộ bộ E2E cũ trên Neon.
+
+## Hiệu ứng chuyển trang — 26/10/2026
+
+Public dùng trạng thái điều hướng thực của Next Link (`useLinkStatus`) và fallback `loading.tsx`, giữ nguyên prefetch và thao tác mở liên kết ở tab khác. Hai cánh màn màu xanh, chữ thương hiệu và nhịp sóng giọng nói được hiển thị trong lúc tải; nội dung mới hiện nhẹ khi sẵn sàng. Không thêm thời gian chờ nhân tạo vào điều hướng. Hoạt ảnh trang trí dừng khi lớp chuyển cảnh ẩn và tôn trọng `prefers-reduced-motion`.
+
+Playwright kiểm tra request điều hướng chậm có kiểm soát, chuyển từ danh sách sang chủ đề, browser Back, ngắt điều hướng bằng liên kết khác, menu điện thoại ở 390 px và chế độ giảm chuyển động. Lớp tải xuất hiện rồi tự ẩn đúng lúc; không tràn ngang hoặc có lỗi JavaScript trong các luồng đã chạy. Không thay đổi nội dung database trong đợt kiểm tra này.
+
+## Danh mục hình ảnh — 26/10/2026
+
+Trang Hình ảnh lọc theo Category loại ALBUM, gom ảnh của các album công khai trong cùng danh mục và loại ảnh trùng ID. Đã thêm Áo dài, Váy, Vest bằng upsert trên Neon; không sửa danh mục của album hiện có. Album chưa gán nhóm vẫn xuất hiện trong Xem tất cả. URL `?album=...` cũ tiếp tục được hỗ trợ.
+
+Playwright đã kiểm tra ba tab danh mục, thông báo nhóm rỗng, khôi phục Xem tất cả, mở/đóng lightbox, nhãn tiếng Anh, giao diện 390 px và lưu danh mục Áo dài qua biểu mẫu tạo album nháp trong Admin. Album nháp thử nghiệm và audit tương ứng được xóa theo đúng ID sau kiểm tra. Không xuất bản ảnh mẫu dưới tên nhóm trang phục.

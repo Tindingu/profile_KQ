@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
-import Link from "next/link";
+import { TransitionLink as Link } from "@/components/public/page-transition";
 import Image from "next/image";
 import { motion } from "motion/react";
 import { Menu, X, ArrowLeft, ArrowRight } from "lucide-react";
@@ -39,6 +39,7 @@ export function PublicNav({
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
   const other = locale === "vi" ? "en" : "vi";
+  const navBrand = `MC ${brand.replace(/^MC\s+/i, "")}`;
   const links = [
     ["gioi-thieu", "about"],
     ["kinh-nghiem", "work"],
@@ -49,13 +50,12 @@ export function PublicNav({
   ];
   return (
     <header className="public-header">
-      <Link className="wordmark" href={`/${locale}`}>
+      <Link className="wordmark header-wordmark" href={`/${locale}`} aria-label={`${navBrand} — ${locale === "en" ? "Home" : "Trang chủ"}`}>
         {logo ? (
           <Image src={logo} alt={brand} width={130} height={50} />
         ) : (
-          brand
+          <bdi>{navBrand}</bdi>
         )}
-        <span>{labels.brandSubtitle}</span>
       </Link>
       <nav className={open ? "open" : ""}>
         {links.map(([path, key]) => (

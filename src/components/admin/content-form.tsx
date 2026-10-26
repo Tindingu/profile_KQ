@@ -31,6 +31,8 @@ export function ContentForm({
   categories,
   media,
   related,
+  topics = [],
+  defaultParentId,
 }: {
   initial?: Values;
   kind: Values["kind"];
@@ -38,6 +40,8 @@ export function ContentForm({
   categories: { id: string; nameVi: string }[];
   media: MediaItem[];
   related: { id: string; title: string }[];
+  topics?: { id: string; title: string }[];
+  defaultParentId?: string;
 }) {
   const [locale, setLocale] = useState(0);
   const [ready, setReady] = useState(false);
@@ -70,6 +74,7 @@ export function ContentForm({
       sortOrder: 0,
       publishedAt: "",
       categoryId: "",
+      parentId: section === "service-articles" ? defaultParentId || "" : "",
       coverId: "",
       galleryIds: [],
       tags: [],
@@ -98,6 +103,10 @@ export function ContentForm({
     );
   }
   function submit(values: Values) {
+    if (section === "service-articles" && !values.parentId) {
+      toast.error("Vui lòng chọn chủ đề dịch vụ cho bài viết.");
+      return;
+    }
     start(async () => {
       try {
         values.data = extra;
@@ -404,6 +413,16 @@ export function ContentForm({
           <aside>
             <section className="panel">
               <h2>Xuất bản</h2>
+              {section === "service-articles" && (
+                <label>
+                  Chủ đề dịch vụ *
+                  <select aria-label="Chủ đề dịch vụ" {...register("parentId")} required>
+                    <option value="">Chọn chủ đề</option>
+                    {topics.map((topic) => <option key={topic.id} value={topic.id}>{topic.title}</option>)}
+                  </select>
+                  {!topics.length && <small>Hãy tạo chủ đề tại Chủ đề dịch vụ trước.</small>}
+                </label>
+              )}
               <label>
                 Trạng thái
                 <select aria-label="Trạng thái" {...register("status")}>
@@ -436,8 +455,8 @@ export function ContentForm({
                 )}
               </label>
               <label>
-                Danh mục
-                <select aria-label="Danh mục" {...register("categoryId")}>
+                {kind === "ALBUM" ? "Danh mục hình ảnh" : "Danh mục"}
+                <select aria-label={kind === "ALBUM" ? "Danh mục hình ảnh" : "Danh mục"} {...register("categoryId")}>
                   <option value="">Chưa chọn</option>
                   {categories.map((c) => (
                     <option key={c.id} value={c.id}>
@@ -445,6 +464,7 @@ export function ContentForm({
                     </option>
                   ))}
                 </select>
+                {kind === "ALBUM" && <small className="block mt-2">Toàn bộ ảnh trong album thuộc danh mục này trên trang Hình ảnh. Ví dụ: Áo dài, Váy, Vest. Thêm nhóm tại Danh mục nội dung → Loại Album.</small>}
               </label>
               <label>
                 Thứ tự

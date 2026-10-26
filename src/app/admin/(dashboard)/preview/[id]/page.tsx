@@ -2,6 +2,7 @@ import { db } from "@/lib/db";
 import { contentInclude } from "@/lib/content";
 import { requireKind, requireUser } from "@/lib/access";
 import { ContentDetail } from "@/components/public/detail";
+import { ServiceListing } from "@/components/public/service-listing";
 import { notFound } from "next/navigation";
 export const metadata = {
   robots: { index: false, follow: false },
@@ -28,7 +29,13 @@ export default async function Preview({
       <p className="preview-banner">
         PRIVATE PREVIEW · {row.status} · Chỉ người dùng đã đăng nhập xem được.
       </p>
-      <ContentDetail
+      {row.kind === "SERVICE" && !row.parentId ? <ServiceListing
+        locale={locale === "en" ? "en" : "vi"}
+        slug={row.slug}
+        title=""
+        search={{}}
+        previewTopic={row}
+      /> : <ContentDetail
         item={row}
         locale={locale === "en" ? "en" : "vi"}
         path={
@@ -38,7 +45,7 @@ export default async function Preview({
               ? "dich-vu"
               : "blog"
         }
-      />
+      />}
     </div>
   );
 }

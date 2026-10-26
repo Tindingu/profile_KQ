@@ -1,6 +1,6 @@
 import Image from "next/image";
 import type { Labels } from "@/lib/site";
-import Link from "next/link";
+import { TransitionLink as Link } from "@/components/public/page-transition";
 import { translated, type ContentRecord } from "@/lib/content";
 import { cleanHtml, safeUrl } from "@/lib/security";
 import { Gallery, ShareButton } from "./interactions";
@@ -35,8 +35,8 @@ export function ContentDetail({
   return (
     <article>
       <header className="detail-header section">
-        <Link className="eyebrow" href={`/${locale}/${path}`}>
-          ← {path.toUpperCase()}
+        <Link className="eyebrow" href={`/${locale}/${path}${item.parent ? "/" + item.parent.slug : ""}`}>
+          ← {item.parent ? item.parent.translations.find((t) => t.locale === locale && t.title)?.title || item.parent.translations.find((t) => t.locale === "vi")?.title : path.toUpperCase()}
         </Link>
         <p className="detail-meta">
           {item.category?.[locale === "en" ? "nameEn" : "nameVi"]} ·{" "}

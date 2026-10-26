@@ -67,6 +67,9 @@ model Category {
 model Content {
   id           String         @id @default(cuid())
   kind         Kind
+  parentId     String?
+  parent       Content?       @relation("ServiceArticles", fields: [parentId], references: [id], onDelete: Restrict)
+  articles     Content[]      @relation("ServiceArticles")
   slug         String
   status       Status         @default(DRAFT)
   featured     Boolean        @default(false)
@@ -95,6 +98,7 @@ model Content {
   @@unique([kind, slug])
   @@index([kind, status, publishedAt])
   @@index([categoryId])
+  @@index([parentId, status, publishedAt])
 }
 
 model Translation {

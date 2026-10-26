@@ -40,6 +40,7 @@ export const contentSchema = z
     sortOrder: z.number().int().min(0).max(99999),
     publishedAt: z.string().max(50),
     categoryId: z.string(),
+    parentId: z.string().optional(),
     coverId: z.string(),
     galleryIds: z.array(z.string()).max(100),
     tags: z.array(z.string().max(80)).max(30),

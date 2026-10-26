@@ -5,8 +5,8 @@ import { siteUrl } from "@/lib/site";
 export const dynamic = "force-dynamic";
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const records = await db.content.findMany({
-    where: { kind: { in: ["POST", "PROJECT", "SERVICE"] }, ...publicWhere() },
-    select: { slug: true, kind: true, updatedAt: true },
+    where: { kind: { in: ["POST", "PROJECT", "SERVICE"] }, ...publicWhere(), OR: [{ parentId: null }, { parent: publicWhere() }] },
+    select: { slug: true, kind: true, updatedAt: true, parent: { select: { slug: true } } },
   });
   const paths = [
     "",
@@ -19,7 +19,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     "/lien-he",
     ...records.map(
       (r) =>
-        `/${r.kind === "POST" ? "blog" : r.kind === "PROJECT" ? "kinh-nghiem" : "dich-vu"}/${r.slug}`,
+        `/${r.kind === "POST" ? "blog" : r.kind === "PROJECT" ? "kinh-nghiem" : "dich-vu"}/${r.parent ? r.parent.slug + "/" : ""}${r.slug}`,
     ),
   ];
   return ["vi", "en"].flatMap((locale) =>

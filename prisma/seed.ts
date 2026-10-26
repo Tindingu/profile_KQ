@@ -80,6 +80,14 @@ async function main() {
   const categories: Record<string, string> = {};
   for (const [kind, names] of [
     [
+      "ALBUM",
+      [
+        ["ao-dai", "Áo dài", "Ao dai"],
+        ["vay", "Váy", "Dresses"],
+        ["vest", "Vest", "Suits"],
+      ],
+    ],
+    [
       "PROJECT",
       [
         ["doanh-nghiep", "Doanh nghiệp", "Corporate"],
@@ -100,10 +108,10 @@ async function main() {
       ],
     ],
   ] as [Kind, string[][]][]) {
-    for (const [slug, nameVi, nameEn] of names) {
+    for (const [sortOrder, [slug, nameVi, nameEn]] of names.entries()) {
       const c = await db.category.upsert({
         where: { kind_slug: { kind, slug } },
-        create: { kind, slug, nameVi, nameEn },
+        create: { kind, slug, nameVi, nameEn, sortOrder },
         update: {},
       });
       categories[slug] = c.id;

@@ -20,6 +20,13 @@ export async function saveContent(input: unknown) {
       : null;
     if (existing && existing.kind !== p.kind)
       throw new Error("Không thể thay đổi loại nội dung.");
+    if (p.parentId) {
+      const parent = await db.content.findUnique({ where: { id: p.parentId } });
+      if (p.kind !== "SERVICE" || !parent || parent.kind !== "SERVICE" || parent.parentId || parent.id === p.id)
+        throw new Error("Vui lòng chọn chủ đề dịch vụ hợp lệ.");
+    }
+    if (existing && Boolean(existing.parentId) !== Boolean(p.parentId))
+      throw new Error("Không thể đổi giữa chủ đề và bài viết dịch vụ.");
     if (p.categoryId) {
       const cat = await db.category.findUniqueOrThrow({
         where: { id: p.categoryId },
@@ -36,6 +43,7 @@ export async function saveContent(input: unknown) {
       translations,
       galleryIds,
       categoryId,
+      parentId,
       coverId,
       publishedAt,
       data,
@@ -48,6 +56,7 @@ export async function saveContent(input: unknown) {
           ...rest,
           authorId: user.id,
           categoryId: categoryId || null,
+          parentId: parentId || null,
           coverId: coverId || null,
           publishedAt: publishedAt
             ? publicationDate(publishedAt)
@@ -59,6 +68,7 @@ export async function saveContent(input: unknown) {
         update: {
           ...rest,
           categoryId: categoryId || null,
+          parentId: parentId || null,
           coverId: coverId || null,
           publishedAt: publishedAt
             ? publicationDate(publishedAt)
@@ -120,6 +130,8 @@ export async function contentAction(
     include: { translations: true, gallery: true },
   });
   const user = await requireKind(row.kind);
+  if (action === "delete" && await db.content.count({ where: { parentId: id } }))
+    throw new Error("Hãy chuyển hoặc xóa các bài viết thuộc chủ đề trước khi xóa chủ đề.");
   if (
     ["PROFILE", "SETTINGS"].includes(row.kind) &&
     ["delete", "duplicate"].includes(action)

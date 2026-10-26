@@ -49,7 +49,8 @@ Phiên đăng nhập có thời hạn tối đa 8 giờ. Khi phiên hết hạn,
 | Tổng quan | Theo dõi nội dung, mở thao tác nhanh | Có | Có |
 | Bài viết | Viết, sửa, xuất bản blog | Có | Có |
 | Portfolio | Quản lý dự án / sự kiện | Có | Có |
-| Dịch vụ | Quản lý các dịch vụ cung cấp | Có | Không |
+| Chủ đề dịch vụ | Quản lý các nhóm dịch vụ cung cấp | Có | Không |
+| Bài viết dịch vụ | Đăng nhiều bài vào từng chủ đề dịch vụ | Có | Không |
 | Đối tác | Quản lý tên, logo và liên kết đối tác | Có | Không |
 | Báo chí | Quản lý bài báo và đường dẫn nguồn | Có | Không |
 | Timeline & thành tích | Quản lý các mốc nghề nghiệp | Có | Không |
@@ -232,15 +233,29 @@ Homepage hiện hiển thị tối đa **4 dự án nổi bật** đã xuất b�
 
 ## 8. Quản lý dịch vụ, đối tác và báo chí
 
-Ba menu dùng chung biểu mẫu biên tập. Chỉ cần điền các trường phù hợp với loại nội dung; không cần điền mọi ô chi tiết.
+Các menu dùng chung biểu mẫu biên tập. Chỉ cần điền các trường phù hợp với loại nội dung; không cần điền mọi ô chi tiết.
 
 | Menu | Những trường nên điền | Nơi hiển thị |
 | --- | --- | --- |
-| Dịch vụ | Tên dịch vụ, slug, mô tả, nội dung VI/EN, ảnh đại diện, thứ tự; tùy chọn gallery, YouTube, audio, nội dung liên quan | Trang chủ và `/vi/dich-vu`; mỗi dịch vụ có trang chi tiết |
+| Chủ đề dịch vụ | Tên chủ đề, slug, mô tả, phần giới thiệu VI/EN, ảnh đại diện, thứ tự | Trang chủ và `/vi/dich-vu`; mỗi chủ đề mở danh sách bài viết |
+| Bài viết dịch vụ | Tiêu đề, slug, mô tả, nội dung VI/EN, ảnh đại diện và **Chủ đề dịch vụ** | Danh sách bài trong chủ đề và trang đọc bài riêng |
 | Đối tác | Tiêu đề là tên đối tác, ảnh đại diện là logo, **Link website / bài gốc** là website đối tác, thứ tự | Khối đối tác trên trang chủ |
 | Báo chí | Tiêu đề bài báo, mô tả, ảnh đại diện, **Khách hàng / Nhà xuất bản** là tên báo, **Link website / bài gốc** là URL nguồn, ngày xuất bản | Khối truyền thông trên trang chủ và `/vi/bao-chi` |
 
-Đối với dịch vụ, có thể trình bày các hạng mục bằng danh sách trong **Nội dung**. **Audio sample URL** cần là đường dẫn đến file âm thanh có thể phát trực tiếp; đây không phải ô tải file lên.
+### Đăng bài vào một chủ đề dịch vụ
+
+Ba mục **MC Sự kiện & Talkshow**, **Voice Talent**, **Hợp tác thương hiệu** là chủ đề chứa nhiều bài viết.
+
+1. Mở **Bài viết dịch vụ** → **+ Tạo mới**. Hoặc mở **Chủ đề dịch vụ** và bấm **+ Thêm bài** tại chủ đề mong muốn.
+2. Nhập tiêu đề, slug, mô tả và nội dung bài, chọn ảnh đại diện nếu có.
+3. Trong khối **Xuất bản**, chọn **Chủ đề dịch vụ \***.
+4. Lưu nháp và xem trước, sau đó chọn **Đã xuất bản** và lưu để đăng.
+
+Ví dụ: chủ đề `/vi/dich-vu/mc-su-kien` liệt kê các bài MC; bài có slug `dan-talkshow` mở tại `/vi/dich-vu/mc-su-kien/dan-talkshow`. Bài thuộc chủ đề nào chỉ xuất hiện trong chủ đề đó. Bài nháp, bài hẹn giờ chưa tới hạn và bài thuộc chủ đề chưa xuất bản không hiển thị công khai.
+
+Nội dung cũ của ba chủ đề được giữ ở mục **Giới thiệu dịch vụ** có thể mở rộng trên trang chủ đề. Muốn đổi tên, ảnh hoặc giới thiệu của chủ đề, chỉnh tại **Chủ đề dịch vụ**. Muốn đổi chủ đề của một bài, chỉnh ô **Chủ đề dịch vụ** trong bài rồi lưu. Cần chuyển hoặc xóa hết bài con trước khi xóa chủ đề.
+
+**Audio sample URL** cần là đường dẫn đến file âm thanh có thể phát trực tiếp; đây không phải ô tải file lên.
 
 Đối tác không có ảnh logo sẽ được trình bày bằng tên. Khi có liên kết, khách có thể bấm để mở website đối tác. Bài báo cần URL nguồn để khách mở bài gốc; không dùng đường dẫn preview Admin làm URL nguồn.
 
@@ -252,12 +267,15 @@ Lưu với trạng thái **Đã xuất bản** và ngày đăng đã đến hạ
 
 1. Mở **Album ảnh** → **+ Tạo mới**.
 2. Nhập tên album VI/EN và slug.
+   Chọn **Danh mục hình ảnh**, ví dụ **Áo dài**, **Váy** hoặc **Vest**. Toàn bộ ảnh trong một album dùng chung danh mục; nên tách thành các album riêng nếu bộ ảnh có nhiều loại trang phục.
 3. Ở khối **Gallery**, bấm **Chọn từ thư viện** và chọn nhiều ảnh.
 4. Sắp xếp bằng kéo thả hoặc nút **↑**.
 5. Chọn trạng thái, thứ tự và bấm **Lưu nội dung**.
 6. Mở `/vi/hinh-anh` để kiểm tra album và ảnh sau khi xuất bản.
 
-Khách có thể lọc theo album trên trang Hình ảnh. Khi mở ảnh lớn, có thể dùng phím trái/phải để chuyển ảnh và Escape để đóng.
+Khách lọc theo **danh mục** trên trang Hình ảnh, ví dụ `/vi/hinh-anh?category=ao-dai`. Một danh mục có thể chứa nhiều album; website gom ảnh từ các album đã xuất bản thuộc danh mục đó và không lặp lại ảnh dùng chung. **Xem tất cả** hiển thị cả ảnh từ album chưa chọn danh mục. Khi mở ảnh lớn, có thể dùng phím trái/phải để chuyển ảnh và Escape để đóng.
+
+Để thêm nhóm mới, vào **Danh mục nội dung** → chọn loại **Album** → nhập tên VI/EN, slug và thứ tự → **Lưu danh mục**. Sau đó mở album, chọn nhóm mới và **Lưu nội dung**. Các nhóm chưa có ảnh vẫn xuất hiện để khách biết bộ ảnh sẽ được cập nhật.
 
 ### Tạo danh mục
 
@@ -271,7 +289,9 @@ Bấm **Sửa** để chỉnh danh mục đã có; bấm **Tạo mới** để t
 
 Danh mục đang được nội dung sử dụng không thể xóa. Hãy đổi hoặc bỏ danh mục trong các nội dung liên quan, lưu lại rồi mới xóa danh mục.
 
-Danh mục loại **Album** chỉ là dữ liệu phân loại; muốn tạo một album chứa ảnh và xuất hiện trong bộ lọc trang Hình ảnh, phải tạo ở menu **Album ảnh**.
+Danh mục loại **Album** là các nhóm trong bộ lọc trang Hình ảnh, như Áo dài, Váy, Vest. Ảnh của nhóm được lấy từ các album đã gán danh mục và đã xuất bản trong menu **Album ảnh**.
+
+Danh mục loại **Dịch vụ** là phân loại phụ. Ba nhóm dịch vụ chính được quản lý tại **Chủ đề dịch vụ**; khi đăng bài hãy chọn ô **Chủ đề dịch vụ** để bài xuất hiện trong đúng nhóm.
 
 ## 10. Thay nội dung trang chủ và giới thiệu
 

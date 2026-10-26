@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { setRequestLocale } from "next-intl/server";
 import { NextIntlClientProvider } from "next-intl";
-import Link from "next/link";
+import { TransitionLink as Link, PageTransition, PageScene } from "@/components/public/page-transition";
 import Script from "next/script";
 import type { Metadata } from "next";
 import { siteData } from "@/lib/site";
@@ -45,6 +45,7 @@ export default async function PublicLayout({
       : null;
   return (
     <NextIntlClientProvider locale={locale} messages={{}}>
+      <PageTransition brand={p?.title || "Content Studio"} locale={locale}>
       <div className="public-site">
         <PublicNav
           locale={locale}
@@ -52,7 +53,7 @@ export default async function PublicLayout({
           labels={labels as unknown as Record<string, string>}
           logo={setting?.cover?.url}
         />
-        {children}
+        <PageScene>{children}</PageScene>
         {analyticsId && (
           <>
             <Script
@@ -104,6 +105,7 @@ export default async function PublicLayout({
           </p>
         </footer>
       </div>
+      </PageTransition>
     </NextIntlClientProvider>
   );
 }
